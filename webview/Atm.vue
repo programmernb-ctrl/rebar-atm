@@ -1,44 +1,38 @@
 <template>
-  <div id="atm">
-    <div class="modal">
-      <div class="money-group">
-        <div class="cash">
-        <h2>{{ t('cash') }} :</h2>
-        <h2>{{ cash }} $</h2>
+  <div
+    class="carousel-container fixed left-5 top-1/2 transform -translate-y-1/2 bg-opacity-70 bg-gray-900 text-white p-6 rounded-lg shadow-lg transition-transform duration-500 ease-in-out"
+    :class="{ 'slide-in': hasLoaded }">
+    <div class="zone-selector mb-5 w-full">
+      <input type="number" id="number-input" min="0" v-model="amount" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="0">
+      <p v-if="errorMessage" class="text-red-500 text-sm mt-2">{{ errorMessage }}</p>
+    </div>
+
+    <div class="carousel-content flex items-center justify-between w-full">
+      <div class="tattoo-details mx-4 w-full text-center">
+        <p><strong>{{ t('cash') }}</strong> {{ '$' + cash }}</p>
+        <p><strong>{{ t('bank') }}</strong> {{ '$' + bank }}</p>
       </div>
-      <div class="money-spacing"></div>
-      <div class="balance">
-        <h2>{{ t('bank') }} :</h2>
-        <h2>{{ bank }} $</h2>
-      </div>
-      </div>
-      <div class="actions">
-        <div v-if="errorMessage" class="error-message">
-          <FONT COLOR="#ff0000"> {{ errorMessage }} </FONT>
-        </div>
-        <div v-if="succesMessage" class="succes-message">
-          <FONT COLOR="#04B404"> {{ succesMessage }} </FONT>
-        </div>
-        <input type="number" v-model="amount" min="0" placeholder='0'>
-        <div class="button-group">
-          <button @click="deposit">{{  t('deposit') }}</button>
-          <div class="button-spacing"></div>
-          <button @click="withdraw">{{  t('withdraw') }}</button>
-        </div>
-      </div>
-      <button @click="exit">{{  t('exit') }}</button>
+    </div>
+
+    <div class="actions mt-5 flex justify-between">
+      <button class="close-button p-2 bg-red-600 text-white rounded-md hover:bg-red-700" @click="close">{{  t('exit') }}</button>
+      <button class="close-button p-2 bg-red-600 text-white rounded-md hover:bg-red-700" @click="deposit">{{  t('deposit') }}</button>
+      <button class="buy-button p-2 bg-green-600 text-white rounded-md hover:bg-green-700" @click="withdraw">{{ t('withdraw') }}</button>
     </div>
   </div>
 </template>
 
-<script lang="ts" setup>
-import { useEvents } from '../../../../webview/composables/useEvents';
-const events = useEvents();
-import { ref, computed } from 'vue';
+<script setup lang="ts">
 
-import '../translate/index'; 
+import { ref, onMounted } from 'vue';
+import { useEvents } from '@Composables/useEvents';
+
 import { useTranslate } from '@Shared/translate';
-const { t } = useTranslate('hu');
+import '../translate/index';
+const { t } = useTranslate('en');
+
+const events = useEvents();
+const hasLoaded = ref(false);
 
 
 const cash = ref<number>(2000);
@@ -53,7 +47,7 @@ events.on('atm:update', (var1: number, var2: number) => {
     });
 
 const deposit = () => {
-  if (amount.value <= 0) {
+  if (amount.value === null || amount.value <= 0) {
     setErrorMessage(t('justpositiv'))
   } else if (amount.value > cash.value) {
     setErrorMessage(t('lessmoney'))
@@ -64,7 +58,7 @@ const deposit = () => {
 };
 
 const withdraw = () => {
-  if (amount.value <= 0) {
+  if (amount.value === null ||amount.value <= 0) {
     setErrorMessage(t('justpositiv'))
   } else if (amount.value > bank.value) {
     setErrorMessage(t('lessbank'))
@@ -89,69 +83,17 @@ const setsuccesMessage = (message: string) => {
 };
 
 
-const exit = () => {
+const close = () => {
   events.emitServer(`Atm:Close`);
 };
 </script>
 
-<style>
-#atm {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+<style scoped>
+.carousel-container {
+  user-select: none;
 }
 
-.modal {
-  width: 400px;
-  height: 300px;
-  background-color: #f0f0f0;
-  border: 2px solid #333;
-  border-radius: 10px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.cash, .balance {
-  margin-bottom: 20px;
-}
-
-.actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-input {
-  width: 150px;
-  margin-bottom: 10px;
-  text-align: center
-}
-
-.button-spacing {
-  width: 10px; /* Itt állíthatod be a részt a gombok között */
-}
-
-.button-group {
-  display: flex;
-  justify-content: space-between;
-}
-
-.money-spacing {
-  width: 10px; /* Itt állíthatod be a részt a gombok között */
-}
-
-.money-group {
-  display: flex;
-  justify-content: space-between;
-}
-
-button {
-  width: 150px;
-  background-color: #ffffff;
-  margin: 0 auto;
-  margin-bottom: 10px;
+.carousel-container.slide-in {
+  transform: translateY(-50%) translateX(0);
 }
 </style>

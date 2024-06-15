@@ -8,6 +8,7 @@ const { t } = useTranslate('en');
 
 const Rebar = useRebar();
 const api = Rebar.useApi();
+const RebarEvents = Rebar.events.useEvents();
 const startcash = 5000 as number; //set new player cash
 const startbank = 5000 as number; //set new player bank
 
@@ -49,15 +50,12 @@ async function handleCharacterCreated(player: alt.Player) {
         // Listen for the player to hit 'E' to interact
         interaction.on(handleInteraction);
 
-        async function handleInteraction(player: alt.Player, colshape: alt.Colshape, uid: string) {
-            //alt.log(`${player.name} has interacted with ATM {${uid}}`);
-
+        async function handleInteraction(player: alt.Player) {
             const character = Rebar.document.character.useCharacter(player);
             const data = character.get();
 
-
             const view = Rebar.player.useWebview(player);
-            player.emit('toggle:controls', false);
+            Rebar.player.useWorld(player).disableControls()
             view.show('Atm', 'page');
             view.emit('atm:update', data.bank, data.cash);
         }
@@ -67,7 +65,8 @@ async function handleCharacterCreated(player: alt.Player) {
 alt.onClient(`Atm:Close`, (player: alt.Player) => {
     const view = Rebar.player.useWebview(player);
     view.hide('Atm')
-    player.emit('toggle:controls', true);
+    Rebar.player.useWorld(player).enableControls()
+
 
 })
 
@@ -123,11 +122,6 @@ async function withdraw(player: alt.Player, value: number) {
 }
 
 
-async function init() {
-    await alt.Utils.waitFor(() => api.isReady('character-creator-api'), 30000);
-    const charSelectApi = api.get('character-creator-api');
-    charSelectApi.onCreate(handleCharacterCreated);
-    charSelectApi.onSkipCreate(handleCharacterCreated);
-}
-
-init();
+RebarEvents.on('character-bound', (player, document) => {
+    handleCharacterCreated(player)
+});
