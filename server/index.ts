@@ -26,11 +26,11 @@ async function handleCharacterCreated(player: alt.Player) {
         return;
     }
 
-    if ( !data.cash) {
+    if ( data.cash === undefined || data.cash === null) {
         characterCurrency.add('cash', startcash)
     }
 
-    if ( !data.bank) {
+    if ( data.bank === undefined || data.bank === null) {
         characterCurrency.add('bank', startbank)
     }
 
