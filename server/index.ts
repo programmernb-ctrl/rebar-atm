@@ -8,7 +8,6 @@ const { t } = useTranslate('en');
 
 const Rebar = useRebar();
 const api = Rebar.useApi();
-const RebarEvents = Rebar.events.useEvents();
 const startcash = 5000 as number; //set new player cash
 const startbank = 5000 as number; //set new player bank
 
@@ -122,6 +121,6 @@ async function withdraw(player: alt.Player, value: number) {
 }
 
 
-RebarEvents.on('character-bound', (player, document) => {
+alt.on('rebar:playerCharacterBound', (player, document) => {
     handleCharacterCreated(player)
 });
